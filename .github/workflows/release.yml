@@ -36,19 +36,13 @@ jobs:
       id-token: write
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
         with:
-          submodules: true
-
-      - name: Use Node.js 20
-        uses: actions/setup-node@v4
-        with:
-          cache: npm
-          node-version: 20
-
-      - name: Install dependencies
-        run: npm ci
+          cache: 'pnpm'
+          node-version-file: '.nvmrc'
+      - run: pnpm i --frozen-lockfile
 
       - name: Prebuild
         run: npm run build

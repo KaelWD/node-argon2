@@ -32,22 +32,17 @@
     "test": "node --test test.cjs"
   },
   "dependencies": {
-    "@phc/format": "^1.0.0",
-    "cross-env": "^10.0.0",
-    "node-addon-api": "^8.5.0",
-    "node-gyp-build": "^4.8.4"
+    "@phc/format": "^1.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.1",
     "@tsconfig/node18": "18.2.4",
     "@types/node": "22.16.3",
-    "node-gyp": "11.3.0",
-    "prebuildify": "6.0.1",
     "typescript": "5.6.3"
   },
-  "packageManager": "npm@11.5.2",
+  "packageManager": "pnpm@10.20.0",
   "engines": {
-    "node": ">=16.17.0"
+    "node": ">=24.7.0"
   },
   "collective": {
     "type": "opencollective",
