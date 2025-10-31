@@ -1,12 +1,11 @@
-import { randomBytes, timingSafeEqual } from "node:crypto";
+import { randomBytes, timingSafeEqual, argon2 as _argon2 } from "node:crypto";
 import { promisify } from "node:util";
 import { deserialize, serialize } from "@phc/format";
-import gypBuild from "node-gyp-build";
-
-const { hash: bindingsHash } = gypBuild(__dirname);
 
 /** @type {(size: number) => Promise<Buffer>} */
 const generateSalt = promisify(randomBytes);
+
+const argon2 = promisify(_argon2);
 
 export const argon2d = 0;
 export const argon2i = 1;
@@ -96,17 +95,15 @@ export async function hash(password, options) {
     associatedData: data = Buffer.alloc(0),
   } = rest;
 
-  const hash = await bindingsHash({
-    password: Buffer.from(password),
-    salt,
+  const hash = await argon2(names[type], {
+    message: password,
+    nonce: salt,
+    parallelism: p,
+    tagLength: hashLength,
+    memory: m,
+    passes: t,
     secret,
-    data,
-    hashLength,
-    m,
-    t,
-    p,
-    version,
-    type,
+    associatedData: data,
   });
   if (raw) {
     return hash;
@@ -163,7 +160,6 @@ export async function verify(digest, password, options = {}) {
   }
 
   const {
-    version = 0x10,
     params: { m, t, p, data = "" },
     salt,
     hash,
@@ -172,17 +168,15 @@ export async function verify(digest, password, options = {}) {
   const { secret = Buffer.alloc(0) } = options;
 
   return timingSafeEqual(
-    await bindingsHash({
-      password: Buffer.from(password),
-      salt,
+    await argon2(types[id], {
+      message: password,
+      nonce: salt,
+      parallelism: p,
+      tagLength: hash.byteLength,
+      memory: m,
+      passes: t,
       secret,
-      data: Buffer.from(data, "base64"),
-      hashLength: hash.byteLength,
-      m: +m,
-      t: +t,
-      p: +p,
-      version: +version,
-      type: types[id],
+      associatedData: data,
     }),
     hash,
   );
