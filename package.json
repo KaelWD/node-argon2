@@ -33,6 +33,7 @@
   },
   "scripts": {
     "lint": "biome check . && tsc --noEmit --pretty",
+    "lint:fix": "biome check . --write",
     "test": "vitest",
     "build": "tsdown"
   },

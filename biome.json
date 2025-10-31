@@ -1,11 +1,17 @@
 {
   "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
   "files": {
-    "includes": ["**/*.cjs", "**/*.json", "!**/.vscode", "!**/dist"]
+    "includes": ["**/*.ts", "**/*.json", "!**/.vscode", "!**/dist"]
   },
   "formatter": {
     "indentStyle": "space",
     "indentWidth": 2
+  },
+  "javascript": {
+    "formatter": {
+      "semicolons": "asNeeded",
+      "quoteStyle": "single"
+    }
   },
   "assist": { "actions": { "source": { "organizeImports": "on" } } },
   "linter": {
