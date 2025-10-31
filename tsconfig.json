@@ -6,5 +6,5 @@
     "declarationMap": true,
     "emitDeclarationOnly": true
   },
-  "files": ["argon2.cjs"]
+  "files": ["argon2.js"]
 }

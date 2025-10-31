@@ -1,6 +1,6 @@
-const assert = require("node:assert/strict");
-const { describe, it } = require("node:test");
-const argon2 = require("./argon2.cjs");
+import assert from "node:assert/strict";
+import { describe, it } from "node:test";
+import argon2 from "./argon2.js";
 
 const { argon2i, argon2d, argon2id } = argon2;
 

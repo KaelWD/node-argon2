@@ -14,5 +14,5 @@ node_modules/
 *.tgz
 
 # Generated Typescript declarations
-*.d.cts
-*.d.cts.map
+*.d.ts
+*.d.ts.map

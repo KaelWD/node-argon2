@@ -19,17 +19,17 @@
   },
   "license": "MIT",
   "author": "Kael Watts-Deuchar <kaelwd@gmail.com>",
-  "type": "commonjs",
-  "main": "argon2.cjs",
-  "types": "argon2.d.cts",
+  "type": "module",
+  "main": "argon2.js",
+  "types": "argon2.d.ts",
   "files": [
-    "argon2.d.cts",
-    "argon2.d.cts.map"
+    "argon2.d.ts",
+    "argon2.d.ts.map"
   ],
   "scripts": {
     "lint": "biome check .",
     "prepare": "tsc",
-    "test": "node --test test.cjs"
+    "test": "node --test test.js"
   },
   "dependencies": {
     "@phc/format": "^1.0.0"
