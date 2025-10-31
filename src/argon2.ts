@@ -14,7 +14,6 @@ const defaults = {
   memoryCost: 1 << 16,
   parallelism: 4,
   type: 'argon2id',
-  version: 0x13,
 } satisfies Options;
 
 interface Options {
@@ -23,7 +22,6 @@ interface Options {
   memoryCost?: number;
   parallelism?: number;
   type?: Argon2Algorithm;
-  version?: number;
   salt?: Buffer;
   associatedData?: Buffer;
   secret?: Buffer;
@@ -71,7 +69,6 @@ export async function hash(password: Buffer | string, options?: Options & { raw?
     hashLength,
     secret = Buffer.alloc(0),
     type,
-    version,
     memoryCost: m,
     timeCost: t,
     parallelism: p,
@@ -94,7 +91,6 @@ export async function hash(password: Buffer | string, options?: Options & { raw?
 
   return serialize({
     id: type,
-    version,
     params: {
       m,
       t,
@@ -115,9 +111,8 @@ export function needsRehash(digest: string, options: {
   timeCost?: number;
   memoryCost?: number;
   parallelism?: number;
-  version?: number;
 } = {}): boolean {
-  const { memoryCost, timeCost, parallelism, version } = {
+  const { memoryCost, timeCost, parallelism } = {
     ...defaults,
     ...options,
   };
@@ -128,10 +123,9 @@ export function needsRehash(digest: string, options: {
   } = deserialize(digest);
   const { m, t, p } = params as PhcParams;
 
-  if (!v) return true;
+  if (v) return true;
 
   return (
-    +v !== +version ||
     +m !== +memoryCost ||
     +t !== +timeCost ||
     +p !== +parallelism
