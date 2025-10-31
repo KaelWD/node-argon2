@@ -13,6 +13,5 @@ node_modules/
 # Output of 'npm pack'
 *.tgz
 
-# Generated Typescript declarations
-*.d.ts
-*.d.ts.map
+# Generated files
+dist/

@@ -1,5 +1,5 @@
 {
-  "name": "argon2",
+  "name": "argon2-native",
   "version": "0.44.0",
   "description": "An Argon2 library for Node",
   "keywords": [
@@ -20,15 +20,21 @@
   "license": "MIT",
   "author": "Kael Watts-Deuchar <kaelwd@gmail.com>",
   "type": "module",
-  "main": "argon2.js",
-  "types": "argon2.d.ts",
+  "main": "dist/argon2.js",
+  "types": "dist/argon2.d.ts",
   "files": [
-    "argon2.d.ts",
-    "argon2.d.ts.map"
+    "dist"
   ],
+  "exports": {
+    ".": {
+      "import": "./dist/argon2.js",
+      "require": "./dist/argon2.cjs"
+    }
+  },
   "scripts": {
     "lint": "biome check . && tsc --noEmit --pretty",
-    "test": "vitest"
+    "test": "vitest",
+    "build": "tsdown"
   },
   "dependencies": {
     "@phc/format": "^1.0.0"
@@ -38,6 +44,7 @@
     "@tsconfig/node24": "24.0.1",
     "@types/node": "24.9.1",
     "@types/phc__format": "^1.0.1",
+    "tsdown": "^0.15.11",
     "typescript": "5.9.3",
     "vitest": "^4.0.4"
   },
