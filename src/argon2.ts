@@ -14,7 +14,7 @@ const defaults = {
   memoryCost: 1 << 16,
   parallelism: 4,
   type: 'argon2id',
-  version: 0x14,
+  version: 0x13,
 } satisfies Options;
 
 interface Options {
@@ -33,7 +33,10 @@ interface PhcParams {
   m: number
   t: number
   p: number
-  data?: Buffer
+  data?: Buffer | string
+}
+interface PhcOutParams extends PhcParams {
+  data?: string
 }
 
 /**
@@ -42,8 +45,8 @@ interface PhcParams {
  * @returns The hash generated from `password`
  */
 export async function hash(password: Buffer | string, options: Options & { raw: true }): Promise<Buffer>
-export async function hash(password: Buffer | string, options: Options & { raw?: boolean }): Promise<string>
-export async function hash(password: Buffer | string, options: Options & { raw?: boolean }): Promise<string | Buffer> {
+export async function hash(password: Buffer | string, options?: Options & { raw?: false }): Promise<string>
+export async function hash(password: Buffer | string, options?: Options & { raw?: boolean }): Promise<string | Buffer> {
   let { raw, salt, ...rest } = { ...defaults, ...options };
 
   if (rest.hashLength > 2 ** 32 - 1) {
@@ -119,8 +122,11 @@ export function needsRehash(digest: string, options: {
     ...options,
   };
 
-  const { version: v, params } = deserialize(digest);
-  const { m, t, p } = params as unknown as PhcParams;
+  const {
+    version: v,
+    params = {} as PhcParams,
+  } = deserialize(digest);
+  const { m, t, p } = params as PhcParams;
 
   if (!v) return true;
 
@@ -145,11 +151,12 @@ export async function verify(
 ): Promise<boolean> {
   const {
     id,
-    params,
+    params = {} as PhcOutParams,
     salt,
     hash
   } = deserialize(digest);
-  const { m, t, p, data } = params as unknown as PhcParams;
+
+  const { m, t, p, data = '' } = params as PhcOutParams;
 
   if (!hash || !salt || !isArgon2Type(id)) {
     return false;
@@ -164,7 +171,7 @@ export async function verify(
       memory: m,
       passes: t,
       secret: options.secret,
-      associatedData: data,
+      associatedData: Buffer.from(data, "base64"),
     }),
     hash,
   );
@@ -172,4 +179,10 @@ export async function verify(
 
 function isArgon2Type (str: string): str is Argon2Algorithm {
   return types.includes(str as any);
+}
+
+export default {
+  hash,
+  needsRehash,
+  verify,
 }

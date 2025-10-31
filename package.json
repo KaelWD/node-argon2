@@ -27,19 +27,19 @@
     "argon2.d.ts.map"
   ],
   "scripts": {
-    "lint": "biome check .",
-    "prepare": "tsc",
-    "test": "node --test test.js"
+    "lint": "biome check . && tsc --noEmit --pretty",
+    "test": "vitest"
   },
   "dependencies": {
     "@phc/format": "^1.0.0"
   },
   "devDependencies": {
     "@biomejs/biome": "2.3.1",
-    "@tsconfig/node18": "18.2.4",
+    "@tsconfig/node24": "24.0.1",
     "@types/node": "24.9.1",
     "@types/phc__format": "^1.0.1",
-    "typescript": "5.6.3"
+    "typescript": "5.9.3",
+    "vitest": "^4.0.4"
   },
   "packageManager": "pnpm@10.20.0",
   "engines": {

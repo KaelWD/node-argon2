@@ -1,10 +1,9 @@
 {
-  "extends": "@tsconfig/node18/tsconfig.json",
+  "extends": "@tsconfig/node24/tsconfig.json",
   "compilerOptions": {
-    "allowJs": true,
     "declaration": true,
     "declarationMap": true,
     "emitDeclarationOnly": true
   },
-  "files": ["argon2.js"]
+  "include": ["src/**/*"]
 }
