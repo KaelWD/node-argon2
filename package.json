@@ -9,13 +9,13 @@
     "hashing",
     "password"
   ],
-  "homepage": "https://github.com/kaelwd/node-argon2#readme",
+  "homepage": "https://github.com/KaelWD/node-argon2#readme",
   "bugs": {
-    "url": "https://github.com/kaelwd/node-argon2/issues"
+    "url": "https://github.com/KaelWD/node-argon2/issues"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/kaelwd/node-argon2.git"
+    "url": "git+https://github.com/KaelWD/node-argon2.git"
   },
   "license": "MIT",
   "author": "Kael Watts-Deuchar <kaelwd@gmail.com>",

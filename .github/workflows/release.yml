@@ -2,39 +2,15 @@ name: Release
 
 on:
   push:
-
-  pull_request:
-    branches:
-    - master
-
-  release:
-    types: [published]
-
-  workflow_dispatch:
-    inputs:
-      new-version:
-        description: New version to be published, overrides tag
-        required: true
-        type: string
-
-      npm-tag:
-        description: NPM tag
-        required: true
-        default: latest
-        type: choice
-        options:
-          - latest
-          - next
+    tags: [v*]
 
 jobs:
   publish:
     name: Publish package
     runs-on: ubuntu-latest
-
     permissions:
       contents: read
       id-token: write
-
     steps:
       - uses: actions/checkout@v4
       - uses: pnpm/action-setup@v4
@@ -47,22 +23,5 @@ jobs:
       - name: Prebuild
         run: pnpm run build
 
-      - name: Pack package
-        run: npm pack
-        if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
-
-      - name: Upload package artifact
-        uses: actions/upload-artifact@v4
-        if: ${{ github.event_name == 'push' || github.event_name == 'pull_request' }}
-        with:
-          name: package
-          path: '*.tgz'
-
       - name: Publish to NPM
-        run: |
-          npm version --allow-same-version --no-git-tag-version $VERSION
-          npm publish --tag $TAG
-        if: ${{ !env.ACT && (github.event_name == 'release' || github.event_name == 'workflow_dispatch') }}
-        env:
-          TAG: ${{ inputs.npm-tag || 'latest' }}
-          VERSION: ${{ inputs.new-version || github.ref_name }}
+        run: npm publish --provenance
