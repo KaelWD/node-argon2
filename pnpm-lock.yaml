@@ -21,6 +21,9 @@ importers:
       '@types/node':
         specifier: 24.9.1
         version: 24.9.1
+      '@types/phc__format':
+        specifier: ^1.0.1
+        version: 1.0.1
       typescript:
         specifier: 5.6.3
         version: 5.6.3
@@ -94,6 +97,9 @@ packages:
   '@types/node@24.9.1':
     resolution: {integrity: sha512-QoiaXANRkSXK6p0Duvt56W208du4P9Uye9hWLWgGMDTEoKPhuenzNcC4vGUmrNkiOKTlIrBoyNQYNpSwfEZXSg==}
 
+  '@types/phc__format@1.0.1':
+    resolution: {integrity: sha512-hoAQFKcP3voXk/ZEl3jrvS63o/HYLszq4nA2mqjytaSEHEy3j3t0gSFtPLnfKtX34k/xfath7etOoGw5ukoqXQ==}
+
   typescript@5.6.3:
     resolution: {integrity: sha512-hjcS1mhfuyi4WW8IWtjP7brDrG2cuDZukyrYrSauoXGNgx0S7zceP07adYkJycEr56BOUTNPzbInooiN3fn1qw==}
     engines: {node: '>=14.17'}
@@ -146,6 +152,10 @@ snapshots:
   '@types/node@24.9.1':
     dependencies:
       undici-types: 7.16.0
+
+  '@types/phc__format@1.0.1':
+    dependencies:
+      '@types/node': 24.9.1
 
   typescript@5.6.3: {}
 

@@ -1,69 +1,49 @@
 import { randomBytes, timingSafeEqual, argon2 as _argon2 } from "node:crypto";
 import { promisify } from "node:util";
 import { deserialize, serialize } from "@phc/format";
+import type { Argon2Algorithm } from 'node:crypto';
 
-/** @type {(size: number) => Promise<Buffer>} */
 const generateSalt = promisify(randomBytes);
-
 const argon2 = promisify(_argon2);
 
-export const argon2d = 0;
-export const argon2i = 1;
-export const argon2id = 2;
-
-/** @enum {argon2i | argon2d | argon2id} */
-const types = Object.freeze({ argon2d, argon2i, argon2id });
-
-/** @enum {'argon2d' | 'argon2i' | 'argon2id'} */
-const names = Object.freeze({
-  [types.argon2d]: "argon2d",
-  [types.argon2i]: "argon2i",
-  [types.argon2id]: "argon2id",
-});
+const types: readonly Argon2Algorithm[] = ['argon2i', 'argon2d', 'argon2id'];
 
 const defaults = {
   hashLength: 32,
   timeCost: 3,
   memoryCost: 1 << 16,
   parallelism: 4,
-  type: argon2id,
-  version: 0x13,
-};
+  type: 'argon2id',
+  version: 0x14,
+} satisfies Options;
+
+interface Options {
+  hashLength?: number;
+  timeCost?: number;
+  memoryCost?: number;
+  parallelism?: number;
+  type?: Argon2Algorithm;
+  version?: number;
+  salt?: Buffer;
+  associatedData?: Buffer;
+  secret?: Buffer;
+}
+
+interface PhcParams {
+  m: number
+  t: number
+  p: number
+  data?: Buffer
+}
 
 /**
- * @typedef {Object} Options
- * @property {number} [hashLength=32]
- * @property {number} [timeCost=3]
- * @property {number} [memoryCost=65536]
- * @property {number} [parallelism=4]
- * @property {keyof typeof names} [type=argon2id]
- * @property {number} [version=19]
- * @property {Buffer} [salt]
- * @property {Buffer} [associatedData]
- * @property {Buffer} [secret]
+ * @param password The plaintext password to be hashed
+ * @param options The parameters for Argon2
+ * @returns The hash generated from `password`
  */
-
-/**
- * Hashes a password with Argon2, producing a raw hash
- *
- * @overload
- * @param {Buffer | string} password The plaintext password to be hashed
- * @param {Options & { raw: true }} options The parameters for Argon2
- * @returns {Promise<Buffer>} The raw hash generated from `password`
- */
-/**
- * Hashes a password with Argon2, producing an encoded hash
- *
- * @overload
- * @param {Buffer | string} password The plaintext password to be hashed
- * @param {Options & { raw?: boolean }} [options] The parameters for Argon2
- * @returns {Promise<string>} The encoded hash generated from `password`
- */
-/**
- * @param {Buffer | string} password The plaintext password to be hashed
- * @param {Options & { raw?: boolean }} [options] The parameters for Argon2
- */
-export async function hash(password, options) {
+export async function hash(password: Buffer | string, options: Options & { raw: true }): Promise<Buffer>
+export async function hash(password: Buffer | string, options: Options & { raw?: boolean }): Promise<string>
+export async function hash(password: Buffer | string, options: Options & { raw?: boolean }): Promise<string | Buffer> {
   let { raw, salt, ...rest } = { ...defaults, ...options };
 
   if (rest.hashLength > 2 ** 32 - 1) {
@@ -95,7 +75,7 @@ export async function hash(password, options) {
     associatedData: data = Buffer.alloc(0),
   } = rest;
 
-  const hash = await argon2(names[type], {
+  const hash = await argon2(type, {
     message: password,
     nonce: salt,
     parallelism: p,
@@ -110,33 +90,39 @@ export async function hash(password, options) {
   }
 
   return serialize({
-    id: names[type],
+    id: type,
     version,
-    params: { m, t, p, ...(data.byteLength > 0 ? { data } : {}) },
+    params: {
+      m,
+      t,
+      p,
+      ...(data.byteLength > 0 ? { data } : {})
+    } satisfies PhcParams,
     salt,
     hash,
   });
 }
 
 /**
- * @param {string} digest The digest to be checked
- * @param {Object} [options] The current parameters for Argon2
- * @param {number} [options.timeCost=3]
- * @param {number} [options.memoryCost=65536]
- * @param {number} [options.parallelism=4]
- * @param {number} [options.version=0x13]
- * @returns {boolean} `true` if the digest parameters do not match the parameters in `options`, otherwise `false`
+ * @param digest The digest to be checked
+ * @param options
+ * @returns `true` if the digest parameters do not match the parameters in `options`, otherwise `false`
  */
-export function needsRehash(digest, options = {}) {
+export function needsRehash(digest: string, options: {
+  timeCost?: number;
+  memoryCost?: number;
+  parallelism?: number;
+  version?: number;
+} = {}): boolean {
   const { memoryCost, timeCost, parallelism, version } = {
     ...defaults,
     ...options,
   };
 
-  const {
-    version: v,
-    params: { m, t, p },
-  } = deserialize(digest);
+  const { version: v, params } = deserialize(digest);
+  const { m, t, p } = params as unknown as PhcParams;
+
+  if (!v) return true;
 
   return (
     +v !== +version ||
@@ -147,37 +133,43 @@ export function needsRehash(digest, options = {}) {
 }
 
 /**
- * @param {string} digest The digest to be checked
- * @param {Buffer | string} password The plaintext password to be verified
- * @param {Object} [options] The current parameters for Argon2
- * @param {Buffer} [options.secret]
- * @returns {Promise<boolean>} `true` if the digest parameters matches the hash generated from `password`, otherwise `false`
+ * @param digest The digest to be checked
+ * @param password The plaintext password to be verified
+ * @param options
+ * @returns `true` if the digest parameters matches the hash generated from `password`, otherwise `false`
  */
-export async function verify(digest, password, options = {}) {
-  const { id, ...rest } = deserialize(digest);
-  if (!(id in types)) {
+export async function verify(
+  digest: string,
+  password: Buffer | string,
+  options: { secret?: Buffer } = {}
+): Promise<boolean> {
+  const {
+    id,
+    params,
+    salt,
+    hash
+  } = deserialize(digest);
+  const { m, t, p, data } = params as unknown as PhcParams;
+
+  if (!hash || !salt || !isArgon2Type(id)) {
     return false;
   }
 
-  const {
-    params: { m, t, p, data = "" },
-    salt,
-    hash,
-  } = rest;
-
-  const { secret = Buffer.alloc(0) } = options;
-
   return timingSafeEqual(
-    await argon2(types[id], {
+    await argon2(id, {
       message: password,
       nonce: salt,
       parallelism: p,
       tagLength: hash.byteLength,
       memory: m,
       passes: t,
-      secret,
+      secret: options.secret,
       associatedData: data,
     }),
     hash,
   );
+}
+
+function isArgon2Type (str: string): str is Argon2Algorithm {
+  return types.includes(str as any);
 }
